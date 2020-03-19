@@ -1,10 +1,12 @@
 'use strict';
+/*Лучше вместо коллекции value создавать отдельные переменные для каждого значения чтобы не путаться в номерах индексов*/
 let startBtn = document.getElementById('start');
 let value = document.querySelectorAll('.budget, .budget-value, .daybudget, .daybudget-value, .level, .level-value, .expenses, .expenses-value, .optionalexpenses, .optionalexpenses-value,  .income, .income-value, .monthsavings, .monthsavings-value, .yearsavings, .yearsavings-value ');
 let input = document.querySelectorAll('.expenses-item');
 let button = document.getElementsByTagName('button');
 let accept = button[0];
 let calculate = button[2];
+let checkSaving = document.getElementById('savings');
 let optionalExpenses = document.querySelectorAll('.optionalexpenses-item');
 let chooseIncome = document.querySelector('.choose-income');
 let chooseSum = document.querySelector('.choose-sum');
@@ -57,7 +59,7 @@ button[1].addEventListener('click', function () {
             && g != '' && g.length < 50) {
             console.log('Done');
             appData.optionalExpenses[k] = g;
-            value[11].textContent += appData.optionalExpenses[j] + ' '; // выводим динамически на страницу каждое введенное в поле значение
+            value[9].textContent += appData.optionalExpenses[j] + ' '; // выводим динамически на страницу каждое введенное в поле значение
             j++; // счетчик цикла
             k++; // индекс добавляемой записи 
         }
@@ -67,9 +69,60 @@ button[1].addEventListener('click', function () {
 
     }
 });
-  button[2].addEventListener('click', function(){
-     value[3].textContent = (appData.budget/30).toFixed();
-     }); 
+button[2].addEventListener('click', function () {
+    if (appData.budget != undefined) {
+        appData.moneyPerDay = (appData.budget / 30).toFixed();
+        value[3].textContent = appData.moneyPerDay;
+        if (appData.moneyPerDay < 100) {
+            value[5].textContent = 'Минимальный уровень достатка';
+        }
+        else if (appData.moneyPerDay > 100 && appData.moneyPerDay < 2000) {
+            value[5].textContent = 'Средний уровень достатка';
+        }
+        else if (appData.moneyPerDay > 2000) {
+            value[5].textContent = ' Высокий уровень достатка';
+        }
+        else { value[5].textContent = 'Что-то пошло не так' };
+    }
+    else {
+        value[3].textContent = " Необходимо начать расчет!";
+    }
+});
+
+chooseIncome.addEventListener('input' /*'change'*/, function () { // событие change срабатывает когда мышь перемещается с поля ввода в любую область и происходит click 
+    let income = chooseIncome.value;
+    appData.income = income.split(",");
+    value[11].textContent = appData.income;
+});
+
+checkSaving.addEventListener('click', function(){  // если при клике на checkbox  свойство saving установлено true то переводим в false. Затем еще раз кликаем и переводим в true  
+    if (appData.saving == true){
+        appData.saving = false;
+    } else {
+        appData.saving = true;
+    }
+});
+
+chooseSum.addEventListener('input', function(){
+    if (appData.saving == true){
+        let summ = +chooseSum.value,
+        percent = +choosePercent.value;
+        appData.monthIncome = (summ / 12 / 100 * percent).toFixed(1);
+        appData.yearIncome = (summ / 100 * percent).toFixed(1);
+        value[13].textContent =appData.monthIncome;
+        value[15].textContent =appData.yearIncome;
+    }
+});
+choosePercent.addEventListener('input', function(){
+    if (appData.saving == true){
+        let summ = +chooseSum.value,
+        percent = +choosePercent.value;
+        appData.monthIncome = (summ / 12 / 100 * percent).toFixed(1);
+        appData.yearIncome = (summ / 100 * percent).toFixed(1);
+        value[13].textContent =appData.monthIncome;
+        value[15].textContent =appData.yearIncome;
+    }
+});
 
 
 // Главный объект программы
@@ -79,50 +132,8 @@ let appData = {
     expenses: {},
     optionalExpenses: {},
     income: [],
-    saving: true,
+    saving: false,
+};
 
-   
-    detectLevel: function () {
-        if (appData.moneyPerDay < 100) {
-            alert('Минимальный уровень достатка');
-        }
-        else if (appData.moneyPerDay > 100 && appData.moneyPerDay < 2000) {
-            alert('Средний уровень достатка');
-        }
-        else if (appData.moneyPerDay > 2000) {
-            alert(' Высокий уровень достатка');
-        }
-        else { alert('Что-то пошло не так')}
-    },
-    checkSaving: function () {
-        if (appData.saving == true) {
-            let save = +prompt('Какова сумма ваших накоплений?'),
-                percent = +prompt(' под какой процент?');
-            appData.monthIncome = (save / 12 / 100 * percent).toFixed(2);
-        }
-        alert(' Доход в месяц с вашего депозита: ' + appData.monthIncome);
-    },
-
-    chooseIncome: function () {
-        for (let i = 0; i < 1; i++) {
-            let income = prompt('Другие способы получения дохода (введите через запятую)');
-            let income2 = prompt('Может что-то еще?');
-            if (typeof (income) === "string" && income != '' && typeof (income2) === "string" && income2 != '') {
-                income += ',' + income2;
-                appData.income = income.split(",");
-                appData.income.sort();
-            }
-            else { i = i - 1; }
-        }
-        appData.income.forEach(function (item, i) { alert('Способы доп. заработка:' + ' ' + (i + 1) + ' ' + item) }) // (i+1) цикл будет выводить элементы начиная с индекса 1
-
-    },
-    showAllobj: function () {
-        console.log('Наша программа включает в себя:' + ' ');
-        for (let key in appData) {
-            console.log(key/* + appData[key] */ + ' ' + typeof (appData[key]));
-        }
-    }
-}
 
 /*Конец готовых функций */
